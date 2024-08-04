@@ -463,7 +463,7 @@ class HTTPAdapter(BaseAdapter):
         :rtype:
             urllib3.ConnectionPool
         """
-        proxy = select_proxy(request.url, proxies)
+        proxy = select_proxy(request.url, proxies, log=True)
         try:
             host_params, pool_kwargs = self.build_connection_pool_key_attributes(
                 request,
@@ -513,7 +513,7 @@ class HTTPAdapter(BaseAdapter):
             ),
             DeprecationWarning,
         )
-        proxy = select_proxy(url, proxies)
+        proxy = select_proxy(url, proxies, log=True)
 
         if proxy:
             proxy = prepend_scheme_if_needed(proxy, "http")
@@ -557,7 +557,7 @@ class HTTPAdapter(BaseAdapter):
         :param proxies: A dictionary of schemes or schemes and hosts to proxy URLs.
         :rtype: str
         """
-        proxy = select_proxy(request.url, proxies)
+        proxy = select_proxy(request.url, proxies, log=True)
         scheme = urlparse(request.url).scheme
 
         is_proxied_http_request = proxy and scheme != "https"

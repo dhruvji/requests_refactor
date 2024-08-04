@@ -838,7 +838,7 @@ def get_environ_proxies(url, no_proxy=None):
         return getproxies()
 
 
-def select_proxy(url, proxies):
+def select_proxy(url, proxies, log=False):
     """Select a proxy for the url, if applicable.
 
     :param url: The url being for the request
