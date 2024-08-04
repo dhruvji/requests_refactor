@@ -539,7 +539,7 @@ def _parse_content_type_header(header):
     return content_type, params_dict
 
 
-def get_encoding_from_headers(headers):
+def get_encoding_from_headers(headers, log=False):
     """Returns encodings from given HTTP Header Dict.
 
     :param headers: dictionary to extract encoding from.
@@ -615,7 +615,7 @@ def get_unicode_from_response(r):
     tried_encodings = []
 
     # Try charset from content-type
-    encoding = get_encoding_from_headers(r.headers)
+    encoding = get_encoding_from_headers(r.headers, log=False)
 
     if encoding:
         try:

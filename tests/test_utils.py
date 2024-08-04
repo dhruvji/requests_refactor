@@ -620,7 +620,7 @@ def test__parse_content_type_header(value, expected):
     ),
 )
 def test_get_encoding_from_headers(value, expected):
-    assert get_encoding_from_headers(value) == expected
+    assert get_encoding_from_headers(value, log=False) == expected
 
 
 @pytest.mark.parametrize(
