@@ -864,7 +864,7 @@ def select_proxy(url, proxies):
     return proxy
 
 
-def resolve_proxies(request, proxies, trust_env=True):
+def resolve_proxies(request, proxies, trust_env=True, log=False):
     """This method takes proxy information from a request and configuration
     input to resolve a mapping of target proxies. This will consider settings
     such as NO_PROXY to strip proxy configurations.

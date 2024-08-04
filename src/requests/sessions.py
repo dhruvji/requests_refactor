@@ -313,7 +313,7 @@ class SessionRedirectMixin:
         """
         headers = prepared_request.headers
         scheme = urlparse(prepared_request.url).scheme
-        new_proxies = resolve_proxies(prepared_request, proxies, self.trust_env)
+        new_proxies = resolve_proxies(prepared_request, proxies, self.trust_env, log=True)
 
         if "Proxy-Authorization" in headers:
             del headers["Proxy-Authorization"]
@@ -681,7 +681,7 @@ class Session(SessionRedirectMixin):
         kwargs.setdefault("verify", self.verify)
         kwargs.setdefault("cert", self.cert)
         if "proxies" not in kwargs:
-            kwargs["proxies"] = resolve_proxies(request, self.proxies, self.trust_env)
+            kwargs["proxies"] = resolve_proxies(request, self.proxies, self.trust_env, log=True)
 
         # It's possible that users might accidentally send a Request object.
         # Guard against that specific failure case.
