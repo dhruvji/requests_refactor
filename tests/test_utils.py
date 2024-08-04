@@ -35,7 +35,7 @@ from requests.utils import (
     select_proxy,
     set_environ,
     should_bypass_proxies,
-    super_len,
+    complex_len,
     to_key_val_list,
     to_native_string,
     unquote_header_value,
@@ -46,7 +46,7 @@ from requests.utils import (
 from .compat import StringIO, cStringIO
 
 
-class TestSuperLen:
+class TestComplexLen:
     @pytest.mark.parametrize(
         "stream, value",
         (
@@ -59,17 +59,17 @@ class TestSuperLen:
     )
     def test_io_streams(self, stream, value):
         """Ensures that we properly deal with different kinds of IO streams."""
-        assert super_len(stream()) == 0
-        assert super_len(stream(value)) == 4
+        assert complex_len(stream()) == 0
+        assert complex_len(stream(value)) == 4
 
-    def test_super_len_correctly_calculates_len_of_partially_read_file(self):
+    def test_complex_len_correctly_calculates_len_of_partially_read_file(self):
         """Ensure that we handle partially consumed file like objects."""
         s = StringIO.StringIO()
         s.write("foobarbogus")
-        assert super_len(s) == 0
+        assert complex_len(s) == 0
 
     @pytest.mark.parametrize("error", [IOError, OSError])
-    def test_super_len_handles_files_raising_weird_errors_in_tell(self, error):
+    def test_complex_len_handles_files_raising_weird_errors_in_tell(self, error):
         """If tell() raises errors, assume the cursor is at position zero."""
 
         class BoomFile:
@@ -79,11 +79,11 @@ class TestSuperLen:
             def tell(self):
                 raise error()
 
-        assert super_len(BoomFile()) == 0
+        assert complex_len(BoomFile()) == 0
 
     @pytest.mark.parametrize("error", [IOError, OSError])
-    def test_super_len_tell_ioerror(self, error):
-        """Ensure that if tell gives an IOError super_len doesn't fail"""
+    def test_complex_len_tell_ioerror(self, error):
+        """Ensure that if tell gives an IOError complex_len doesn't fail"""
 
         class NoLenBoomFile:
             def tell(self):
@@ -92,10 +92,10 @@ class TestSuperLen:
             def seek(self, offset, whence):
                 pass
 
-        assert super_len(NoLenBoomFile()) == 0
+        assert complex_len(NoLenBoomFile()) == 0
 
     def test_string(self):
-        assert super_len("Test") == 4
+        assert complex_len("Test") == 4
 
     @pytest.mark.parametrize(
         "mode, warnings_num",
@@ -108,7 +108,7 @@ class TestSuperLen:
         file_obj = tmpdir.join("test.txt")
         file_obj.write("Test")
         with file_obj.open(mode) as fd:
-            assert super_len(fd) == 4
+            assert complex_len(fd) == 4
         assert len(recwarn) == warnings_num
 
     def test_tarfile_member(self, tmpdir):
@@ -121,35 +121,35 @@ class TestSuperLen:
 
         with tarfile.open(tar_obj) as tar:
             member = tar.extractfile("test.txt")
-            assert super_len(member) == 4
+            assert complex_len(member) == 4
 
-    def test_super_len_with__len__(self):
+    def test_complex_len_with__len__(self):
         foo = [1, 2, 3, 4]
-        len_foo = super_len(foo)
+        len_foo = complex_len(foo)
         assert len_foo == 4
 
-    def test_super_len_with_no__len__(self):
+    def test_complex_len_with_no__len__(self):
         class LenFile:
             def __init__(self):
                 self.len = 5
 
-        assert super_len(LenFile()) == 5
+        assert complex_len(LenFile()) == 5
 
-    def test_super_len_with_tell(self):
+    def test_complex_len_with_tell(self):
         foo = StringIO.StringIO("12345")
-        assert super_len(foo) == 5
+        assert complex_len(foo) == 5
         foo.read(2)
-        assert super_len(foo) == 3
+        assert complex_len(foo) == 3
 
-    def test_super_len_with_fileno(self):
+    def test_complex_len_with_fileno(self):
         with open(__file__, "rb") as f:
-            length = super_len(f)
+            length = complex_len(f)
             file_data = f.read()
         assert length == len(file_data)
 
-    def test_super_len_with_no_matches(self):
+    def test_complex_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
-        assert super_len(object()) == 0
+        assert complex_len(object()) == 0
 
 
 class TestToKeyValList:

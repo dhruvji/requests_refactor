@@ -62,7 +62,7 @@ from .utils import (
     parse_header_links,
     requote_uri,
     stream_decode_response_unicode,
-    super_len,
+    complex_len,
     to_key_val_list,
 )
 
@@ -523,7 +523,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
 
         if is_stream:
             try:
-                length = super_len(data)
+                length = complex_len(data)
             except (TypeError, AttributeError, UnsupportedOperation):
                 length = None
 
@@ -572,7 +572,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
     def prepare_content_length(self, body):
         """Prepare Content-Length header based on request method and body"""
         if body is not None:
-            length = super_len(body)
+            length = complex_len(body)
             if length:
                 # If length exists, set it. Otherwise, we fallback
                 # to Transfer-Encoding: chunked.

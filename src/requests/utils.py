@@ -133,7 +133,7 @@ def dict_to_sequence(d):
     return d
 
 
-def super_len(o):
+def complex_len(o):
     total_length = None
     current_position = 0
 
