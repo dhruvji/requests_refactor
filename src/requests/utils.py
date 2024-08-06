@@ -50,7 +50,7 @@ from .compat import (
     urlparse,
     urlunparse,
 )
-from .cookies import cookiejar_from_dict
+from .cookies import CookieUtils
 from .exceptions import (
     FileModeWarning,
     InvalidHeader,
@@ -486,7 +486,7 @@ def add_dict_to_cookiejar(cj, cookie_dict):
     :rtype: CookieJar
     """
 
-    return cookiejar_from_dict(cookie_dict, cj)
+    return CookieUtils.cookiejar_from_dict(cookie_dict, cj)
 
 
 def get_encodings_from_content(content):

@@ -15,7 +15,7 @@ from base64 import b64encode
 
 from ._internal_utils import to_native_string
 from .compat import basestring, str, urlparse
-from .cookies import extract_cookies_to_jar
+from .cookies import CookieUtils
 from .utils import parse_dict_header
 
 CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded"
@@ -267,7 +267,7 @@ class HTTPDigestAuth(AuthBase):
             r.content
             r.close()
             prep = r.request.copy()
-            extract_cookies_to_jar(prep._cookies, r.request, r.raw)
+            CookieUtils.extract_cookies_to_jar(prep._cookies, r.request, r.raw)
             prep.prepare_cookies(prep._cookies)
 
             prep.headers["Authorization"] = self.build_digest_header(

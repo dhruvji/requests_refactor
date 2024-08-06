@@ -31,7 +31,7 @@ from urllib3.util.ssl_ import create_urllib3_context
 
 from .auth import _basic_auth_str
 from .compat import basestring, urlparse
-from .cookies import extract_cookies_to_jar
+from .cookies import CookieUtils
 from .exceptions import (
     ConnectionError,
     ConnectTimeout,
@@ -385,7 +385,7 @@ class HTTPAdapter(BaseAdapter):
             response.url = req.url
 
         # Add new cookies from the server.
-        extract_cookies_to_jar(response.cookies, req, resp)
+        CookieUtils.extract_cookies_to_jar(response.cookies, req, resp)
 
         # Give the Response some context.
         response.request = req

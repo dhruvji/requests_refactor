@@ -2,7 +2,7 @@
 requests.cookies
 ~~~~~~~~~~~~~~~~
 
-Compatibility code to be able to use `http.cookiejar.CookieJar` with requests.
+Compatibility code to be able to use http.cookiejar.CookieJar with requests.
 
 requests.utils imports from here, so be careful with imports.
 """
@@ -119,58 +119,6 @@ class MockResponse:
 
     def getheaders(self, name):
         self._headers.getheaders(name)
-
-
-def extract_cookies_to_jar(jar, request, response):
-    """Extract the cookies from the response into a CookieJar.
-
-    :param jar: http.cookiejar.CookieJar (not necessarily a RequestsCookieJar)
-    :param request: our own requests.Request object
-    :param response: urllib3.HTTPResponse object
-    """
-    if not (hasattr(response, "_original_response") and response._original_response):
-        return
-    # the _original_response field is the wrapped httplib.HTTPResponse object,
-    req = MockRequest(request)
-    # pull out the HTTPMessage with the headers and put it in the mock:
-    res = MockResponse(response._original_response.msg)
-    jar.extract_cookies(res, req)
-
-
-def get_cookie_header(jar, request):
-    """
-    Produce an appropriate Cookie header string to be sent with `request`, or None.
-
-    :rtype: str
-    """
-    r = MockRequest(request)
-    jar.add_cookie_header(r)
-    return r.get_new_headers().get("Cookie")
-
-
-def remove_cookie_by_name(cookiejar, name, domain=None, path=None):
-    """Unsets a cookie by name, by default over all domains and paths.
-
-    Wraps CookieJar.clear(), is O(n).
-    """
-    clearables = []
-    for cookie in cookiejar:
-        if cookie.name != name:
-            continue
-        if domain is not None and domain != cookie.domain:
-            continue
-        if path is not None and path != cookie.path:
-            continue
-        clearables.append((cookie.domain, cookie.path, cookie.name))
-
-    for domain, path, name in clearables:
-        cookiejar.clear(domain, path, name)
-
-
-class CookieConflictError(RuntimeError):
-    """There are two cookies that meet the criteria specified in the cookie jar.
-    Use .get and .set and include domain and path args in order to be more specific.
-    """
 
 
 class RequestsCookieJar(cookielib.CookieJar, MutableMapping):
@@ -437,125 +385,175 @@ class RequestsCookieJar(cookielib.CookieJar, MutableMapping):
         return self._policy
 
 
-def _copy_cookie_jar(jar):
-    if jar is None:
-        return None
+class CookieUtils:
+    """Utility class for cookie-related functions."""
 
-    if hasattr(jar, "copy"):
-        # We're dealing with an instance of RequestsCookieJar
-        return jar.copy()
-    # We're dealing with a generic CookieJar instance
-    new_jar = copy.copy(jar)
-    new_jar.clear()
-    for cookie in jar:
-        new_jar.set_cookie(copy.copy(cookie))
-    return new_jar
+    @staticmethod
+    def extract_cookies_to_jar(jar, request, response):
+        """Extract the cookies from the response into a CookieJar.
 
+        :param jar: http.cookiejar.CookieJar (not necessarily a RequestsCookieJar)
+        :param request: our own requests.Request object
+        :param response: urllib3.HTTPResponse object
+        """
+        if not (hasattr(response, "_original_response") and response._original_response):
+            return
+        # the _original_response field is the wrapped httplib.HTTPResponse object,
+        req = MockRequest(request)
+        # pull out the HTTPMessage with the headers and put it in the mock:
+        res = MockResponse(response._original_response.msg)
+        jar.extract_cookies(res, req)
 
-def create_cookie(name, value, **kwargs):
-    """Make a cookie from underspecified parameters.
+    @staticmethod
+    def get_cookie_header(jar, request):
+        """
+        Produce an appropriate Cookie header string to be sent with `request`, or None.
 
-    By default, the pair of `name` and `value` will be set for the domain ''
-    and sent on every request (this is sometimes called a "supercookie").
-    """
-    result = {
-        "version": 0,
-        "name": name,
-        "value": value,
-        "port": None,
-        "domain": "",
-        "path": "/",
-        "secure": False,
-        "expires": None,
-        "discard": True,
-        "comment": None,
-        "comment_url": None,
-        "rest": {"HttpOnly": None},
-        "rfc2109": False,
-    }
+        :rtype: str
+        """
+        r = MockRequest(request)
+        jar.add_cookie_header(r)
+        return r.get_new_headers().get("Cookie")
 
-    badargs = set(kwargs) - set(result)
-    if badargs:
-        raise TypeError(
-            f"create_cookie() got unexpected keyword arguments: {list(badargs)}"
+    @staticmethod
+    def remove_cookie_by_name(cookiejar, name, domain=None, path=None):
+        """Unsets a cookie by name, by default over all domains and paths.
+
+        Wraps CookieJar.clear(), is O(n).
+        """
+        clearables = []
+        for cookie in cookiejar:
+            if cookie.name != name:
+                continue
+            if domain is not None and domain != cookie.domain:
+                continue
+            if path is not None and path != cookie.path:
+                continue
+            clearables.append((cookie.domain, cookie.path, cookie.name))
+
+        for domain, path, name in clearables:
+            cookiejar.clear(domain, path, name)
+
+    @staticmethod
+    def _copy_cookie_jar(jar):
+        if jar is None:
+            return None
+
+        if hasattr(jar, "copy"):
+            # We're dealing with an instance of RequestsCookieJar
+            return jar.copy()
+        # We're dealing with a generic CookieJar instance
+        new_jar = copy.copy(jar)
+        new_jar.clear()
+        for cookie in jar:
+            new_jar.set_cookie(copy.copy(cookie))
+        return new_jar
+
+    @staticmethod
+    def create_cookie(name, value, **kwargs):
+        """Make a cookie from underspecified parameters.
+
+        By default, the pair of `name` and `value` will be set for the domain ''
+        and sent on every request (this is sometimes called a "supercookie").
+        """
+        result = {
+            "version": 0,
+            "name": name,
+            "value": value,
+            "port": None,
+            "domain": "",
+            "path": "/",
+            "secure": False,
+            "expires": None,
+            "discard": True,
+            "comment": None,
+            "comment_url": None,
+            "rest": {"HttpOnly": None},
+            "rfc2109": False,
+        }
+
+        badargs = set(kwargs) - set(result)
+        if badargs:
+            raise TypeError(
+                f"create_cookie() got unexpected keyword arguments: {list(badargs)}"
+            )
+
+        result.update(kwargs)
+        result["port_specified"] = bool(result["port"])
+        result["domain_specified"] = bool(result["domain"])
+        result["domain_initial_dot"] = result["domain"].startswith(".")
+        result["path_specified"] = bool(result["path"])
+
+        return cookielib.Cookie(**result)
+
+    @staticmethod
+    def morsel_to_cookie(morsel):
+        """Convert a Morsel object into a Cookie containing the one k/v pair."""
+
+        expires = None
+        if morsel["max-age"]:
+            try:
+                expires = int(time.time() + int(morsel["max-age"]))
+            except ValueError:
+                raise TypeError(f"max-age: {morsel['max-age']} must be integer")
+        elif morsel["expires"]:
+            time_template = "%a, %d-%b-%Y %H:%M:%S GMT"
+            expires = calendar.timegm(time.strptime(morsel["expires"], time_template))
+        return CookieUtils.create_cookie(
+            comment=morsel["comment"],
+            comment_url=bool(morsel["comment"]),
+            discard=False,
+            domain=morsel["domain"],
+            expires=expires,
+            name=morsel.key,
+            path=morsel["path"],
+            port=None,
+            rest={"HttpOnly": morsel["httponly"]},
+            rfc2109=False,
+            secure=bool(morsel["secure"]),
+            value=morsel.value,
+            version=morsel["version"] or 0,
         )
 
-    result.update(kwargs)
-    result["port_specified"] = bool(result["port"])
-    result["domain_specified"] = bool(result["domain"])
-    result["domain_initial_dot"] = result["domain"].startswith(".")
-    result["path_specified"] = bool(result["path"])
+    @staticmethod
+    def cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True):
+        """Returns a CookieJar from a key/value dictionary.
 
-    return cookielib.Cookie(**result)
+        :param cookie_dict: Dict of key/values to insert into CookieJar.
+        :param cookiejar: (optional) A cookiejar to add the cookies to.
+        :param overwrite: (optional) If False, will not replace cookies
+            already in the jar with new ones.
+        :rtype: CookieJar
+        """
+        if cookiejar is None:
+            cookiejar = RequestsCookieJar()
 
+        if cookie_dict is not None:
+            names_from_jar = [cookie.name for cookie in cookiejar]
+            for name in cookie_dict:
+                if overwrite or (name not in names_from_jar):
+                    cookiejar.set_cookie(CookieUtils.create_cookie(name, cookie_dict[name]))
 
-def morsel_to_cookie(morsel):
-    """Convert a Morsel object into a Cookie containing the one k/v pair."""
+        return cookiejar
 
-    expires = None
-    if morsel["max-age"]:
-        try:
-            expires = int(time.time() + int(morsel["max-age"]))
-        except ValueError:
-            raise TypeError(f"max-age: {morsel['max-age']} must be integer")
-    elif morsel["expires"]:
-        time_template = "%a, %d-%b-%Y %H:%M:%S GMT"
-        expires = calendar.timegm(time.strptime(morsel["expires"], time_template))
-    return create_cookie(
-        comment=morsel["comment"],
-        comment_url=bool(morsel["comment"]),
-        discard=False,
-        domain=morsel["domain"],
-        expires=expires,
-        name=morsel.key,
-        path=morsel["path"],
-        port=None,
-        rest={"HttpOnly": morsel["httponly"]},
-        rfc2109=False,
-        secure=bool(morsel["secure"]),
-        value=morsel.value,
-        version=morsel["version"] or 0,
-    )
+    @staticmethod
+    def merge_cookies(cookiejar, cookies):
+        """Add cookies to cookiejar and returns a merged CookieJar.
 
+        :param cookiejar: CookieJar object to add the cookies to.
+        :param cookies: Dictionary or CookieJar object to be added.
+        :rtype: CookieJar
+        """
+        if not isinstance(cookiejar, cookielib.CookieJar):
+            raise ValueError("You can only merge into CookieJar")
 
-def cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True):
-    """Returns a CookieJar from a key/value dictionary.
+        if isinstance(cookies, dict):
+            cookiejar = CookieUtils.cookiejar_from_dict(cookies, cookiejar=cookiejar, overwrite=False)
+        elif isinstance(cookies, cookielib.CookieJar):
+            try:
+                cookiejar.update(cookies)
+            except AttributeError:
+                for cookie_in_jar in cookies:
+                    cookiejar.set_cookie(cookie_in_jar)
 
-    :param cookie_dict: Dict of key/values to insert into CookieJar.
-    :param cookiejar: (optional) A cookiejar to add the cookies to.
-    :param overwrite: (optional) If False, will not replace cookies
-        already in the jar with new ones.
-    :rtype: CookieJar
-    """
-    if cookiejar is None:
-        cookiejar = RequestsCookieJar()
-
-    if cookie_dict is not None:
-        names_from_jar = [cookie.name for cookie in cookiejar]
-        for name in cookie_dict:
-            if overwrite or (name not in names_from_jar):
-                cookiejar.set_cookie(create_cookie(name, cookie_dict[name]))
-
-    return cookiejar
-
-
-def merge_cookies(cookiejar, cookies):
-    """Add cookies to cookiejar and returns a merged CookieJar.
-
-    :param cookiejar: CookieJar object to add the cookies to.
-    :param cookies: Dictionary or CookieJar object to be added.
-    :rtype: CookieJar
-    """
-    if not isinstance(cookiejar, cookielib.CookieJar):
-        raise ValueError("You can only merge into CookieJar")
-
-    if isinstance(cookies, dict):
-        cookiejar = cookiejar_from_dict(cookies, cookiejar=cookiejar, overwrite=False)
-    elif isinstance(cookies, cookielib.CookieJar):
-        try:
-            cookiejar.update(cookies)
-        except AttributeError:
-            for cookie_in_jar in cookies:
-                cookiejar.set_cookie(cookie_in_jar)
-
-    return cookiejar
+        return cookiejar

@@ -37,7 +37,7 @@ from .compat import (
 )
 from .compat import json as complexjson
 from .compat import urlencode, urlsplit, urlunparse
-from .cookies import _copy_cookie_jar, cookiejar_from_dict, get_cookie_header
+from .cookies import CookieUtils
 from .exceptions import (
     ChunkedEncodingError,
     ConnectionError,
@@ -384,7 +384,7 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
         p.method = self.method
         p.url = self.url
         p.headers = self.headers.copy() if self.headers is not None else None
-        p._cookies = _copy_cookie_jar(self._cookies)
+        p._cookies = CookieUtils._copy_cookie_jar(self._cookies)
         p.body = self.body
         p.hooks = self.hooks
         p._body_position = self._body_position
@@ -621,9 +621,9 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
         if isinstance(cookies, cookielib.CookieJar):
             self._cookies = cookies
         else:
-            self._cookies = cookiejar_from_dict(cookies)
+            self._cookies = CookieUtils.cookiejar_from_dict(cookies)
 
-        cookie_header = get_cookie_header(self._cookies, self)
+        cookie_header = CookieUtils.get_cookie_header(self._cookies, self)
         if cookie_header is not None:
             self.headers["Cookie"] = cookie_header
 
@@ -688,7 +688,7 @@ class Response:
         self.reason = None
 
         #: A CookieJar of Cookies the server sent back.
-        self.cookies = cookiejar_from_dict({})
+        self.cookies = CookieUtils.cookiejar_from_dict({})
 
         #: The amount of time elapsed between sending the request
         #: and the arrival of the response (as a timedelta).

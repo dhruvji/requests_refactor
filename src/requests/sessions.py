@@ -17,9 +17,7 @@ from .auth import _basic_auth_str
 from .compat import Mapping, cookielib, urljoin, urlparse
 from .cookies import (
     RequestsCookieJar,
-    cookiejar_from_dict,
-    extract_cookies_to_jar,
-    merge_cookies,
+    CookieUtils,
 )
 from .exceptions import (
     ChunkedEncodingError,
@@ -237,8 +235,8 @@ class SessionRedirectMixin:
             # Extract any cookies sent on the response to the cookiejar
             # in the new request. Because we've mutated our copied prepared
             # request, use the old one that we haven't yet touched.
-            extract_cookies_to_jar(prepared_request._cookies, req, resp.raw)
-            merge_cookies(prepared_request._cookies, self.cookies)
+            CookieUtils.extract_cookies_to_jar(prepared_request._cookies, req, resp.raw)
+            CookieUtils.merge_cookies(prepared_request._cookies, self.cookies)
             prepared_request.prepare_cookies(prepared_request._cookies)
 
             # Rebuild auth and proxy information.
@@ -273,7 +271,7 @@ class SessionRedirectMixin:
                     **adapter_kwargs,
                 )
 
-                extract_cookies_to_jar(self.cookies, prepared_request, resp.raw)
+                CookieUtils.extract_cookies_to_jar(self.cookies, prepared_request, resp.raw)
 
                 # extract redirect url, if any, for the next loop
                 url = self.get_redirect_target(resp)
@@ -441,7 +439,7 @@ class Session(SessionRedirectMixin):
         #: session. By default it is a
         #: :class:`RequestsCookieJar <requests.cookies.RequestsCookieJar>`, but
         #: may be any other ``cookielib.CookieJar`` compatible object.
-        self.cookies = cookiejar_from_dict({})
+        self.cookies = CookieUtils.cookiejar_from_dict({})
 
         # Default connection adapters.
         self.adapters = OrderedDict()
@@ -468,11 +466,11 @@ class Session(SessionRedirectMixin):
 
         # Bootstrap CookieJar.
         if not isinstance(cookies, cookielib.CookieJar):
-            cookies = cookiejar_from_dict(cookies)
+            cookies = CookieUtils.cookiejar_from_dict(cookies)
 
         # Merge with session cookies
-        merged_cookies = merge_cookies(
-            merge_cookies(RequestsCookieJar(), self.cookies), cookies
+        merged_cookies = CookieUtils.merge_cookies(
+            CookieUtils.merge_cookies(RequestsCookieJar(), self.cookies), cookies
         )
 
         # Set environment's basic authentication if not explicitly set.
@@ -713,9 +711,9 @@ class Session(SessionRedirectMixin):
         if r.history:
             # If the hooks create history then we want those cookies too
             for resp in r.history:
-                extract_cookies_to_jar(self.cookies, resp.request, resp.raw)
+                CookieUtils.extract_cookies_to_jar(self.cookies, resp.request, resp.raw)
 
-        extract_cookies_to_jar(self.cookies, request, r.raw)
+        CookieUtils.extract_cookies_to_jar(self.cookies, request, r.raw)
 
         # Resolve redirects if allowed.
         if allow_redirects:
