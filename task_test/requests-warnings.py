@@ -160,7 +160,6 @@ class TestWarningsFile(unittest.TestCase):
         import_found = False
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module == 'warnings':
-                print(f"Found import from {node.module} with names {[alias.name for alias in node.names]}")
                 for alias in node.names:
                     if alias.name == 'FileModeWarning':
                         import_found = True
