@@ -52,11 +52,11 @@ from .compat import (
 )
 from .cookies import cookiejar_from_dict
 from .exceptions import (
-    FileModeWarning,
     InvalidHeader,
     InvalidURL,
     UnrewindableBodyError,
 )
+from .warnings import FileModeWarning 
 from .structures import CaseInsensitiveDict
 
 NETRC_FILES = (".netrc", "_netrc")

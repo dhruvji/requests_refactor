@@ -42,7 +42,7 @@ import warnings
 
 import urllib3
 
-from .exceptions import RequestsDependencyWarning
+from .warnings import RequestsDependencyWarning
 
 try:
     from charset_normalizer import __version__ as charset_normalizer_version
