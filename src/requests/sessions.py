@@ -27,7 +27,6 @@ from .exceptions import (
     InvalidSchema,
     TooManyRedirects,
 )
-from .hooks import default_hooks, dispatch_hook
 
 # formerly defined here, reexposed here for backward compatibility
 from .models import (  # noqa: F401
@@ -101,6 +100,25 @@ def merge_hooks(request_hooks, session_hooks, dict_class=OrderedDict):
         return session_hooks
 
     return merge_setting(request_hooks, session_hooks, dict_class)
+
+HOOKS = ["response"]
+
+
+def default_hooks():
+    return {event: [] for event in HOOKS}
+
+def dispatch_hook(key, hooks, hook_data, **kwargs):
+    """Dispatches a hook dictionary on a given piece of data."""
+    hooks = hooks or {}
+    hooks = hooks.get(key)
+    if hooks:
+        if hasattr(hooks, "__call__"):
+            hooks = [hooks]
+        for hook in hooks:
+            _hook_data = hook(hook_data, **kwargs)
+            if _hook_data is not None:
+                hook_data = _hook_data
+    return hook_data
 
 
 class SessionRedirectMixin:

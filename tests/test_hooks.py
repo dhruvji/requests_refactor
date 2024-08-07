@@ -1,6 +1,6 @@
 import pytest
 
-from requests import hooks
+from requests import sessions
 
 
 def hook(value):
@@ -15,8 +15,8 @@ def hook(value):
     ),
 )
 def test_hooks(hooks_list, result):
-    assert hooks.dispatch_hook("response", {"response": hooks_list}, "Data") == result
+    assert sessions.dispatch_hook("response", {"response": hooks_list}, "Data") == result
 
 
 def test_default_hooks():
-    assert hooks.default_hooks() == {"response": []}
+    assert sessions.default_hooks() == {"response": []}

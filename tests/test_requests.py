@@ -46,9 +46,8 @@ from requests.exceptions import (
 )
 from requests.exceptions import SSLError as RequestsSSLError
 from requests.exceptions import Timeout, TooManyRedirects, UnrewindableBodyError
-from requests.hooks import default_hooks
 from requests.models import PreparedRequest, urlencode
-from requests.sessions import SessionRedirectMixin
+from requests.sessions import SessionRedirectMixin, default_hooks
 from requests.structures import CaseInsensitiveDict
 
 from . import SNIMissingWarning
