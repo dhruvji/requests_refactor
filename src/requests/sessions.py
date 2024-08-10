@@ -48,7 +48,7 @@ from .utils import (  # noqa: F401
     resolve_proxies,
     rewind_body,
     should_bypass_proxies,
-    to_key_val_list,
+    key_val_convert,
 )
 
 # Preferred clock, based on which one is more accurate on a given system.
@@ -76,8 +76,8 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):
     ):
         return request_setting
 
-    merged_setting = dict_class(to_key_val_list(session_setting))
-    merged_setting.update(to_key_val_list(request_setting))
+    merged_setting = dict_class(key_val_convert(session_setting, to_dict=False))
+    merged_setting.update(key_val_convert(request_setting, to_dict=False))
 
     # Remove keys that are set to None. Extract keys first to avoid altering
     # the dictionary during iteration.

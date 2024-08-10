@@ -63,7 +63,7 @@ from .utils import (
     requote_uri,
     stream_decode_response_unicode,
     super_len,
-    to_key_val_list,
+    key_val_convert,
 )
 
 #: The set of HTTP status codes that indicate an automatically
@@ -118,7 +118,7 @@ class RequestEncodingMixin:
             return data
         elif hasattr(data, "__iter__"):
             result = []
-            for k, vs in to_key_val_list(data):
+            for k, vs in key_val_convert(data, to_dict=False):
                 if isinstance(vs, basestring) or not hasattr(vs, "__iter__"):
                     vs = [vs]
                 for v in vs:
@@ -149,8 +149,8 @@ class RequestEncodingMixin:
             raise ValueError("Data must not be a string.")
 
         new_fields = []
-        fields = to_key_val_list(data or {})
-        files = to_key_val_list(files or {})
+        fields = key_val_convert(data or {}, to_dict=False)
+        files = key_val_convert(files or {}, to_dict=False)
 
         for field, val in fields:
             if isinstance(val, basestring) or not hasattr(val, "__iter__"):

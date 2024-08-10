@@ -317,24 +317,18 @@ def atomic_open(filename):
         os.remove(tmp_name)
         raise
 
+def key_val_convert(value, to_dict=True):
+    """Converts between a list of key-value tuples and an OrderedDict
+    based on the `to_dict` flag.
 
-def from_key_val_list(value):
-    """Take an object and test to see if it can be represented as a
-    dictionary. Unless it can not be represented as such, return an
-    OrderedDict, e.g.,
+    - If `to_dict` is True, it behaves like `from_key_val_list`: 
+      Converts to an OrderedDict.
+    - If `to_dict` is False, it behaves like `to_key_val_list`: 
+      Converts to a list of key-value tuples.
 
-    ::
-
-        >>> from_key_val_list([('key', 'val')])
-        OrderedDict([('key', 'val')])
-        >>> from_key_val_list('string')
-        Traceback (most recent call last):
-        ...
-        ValueError: cannot encode objects that are not 2-tuples
-        >>> from_key_val_list({'key': 'val'})
-        OrderedDict([('key', 'val')])
-
-    :rtype: OrderedDict
+    :param value: List of tuples or a mapping (e.g., dict, OrderedDict).
+    :param to_dict: Boolean flag indicating the conversion direction.
+    :rtype: OrderedDict or list
     """
     if value is None:
         return None
@@ -342,36 +336,14 @@ def from_key_val_list(value):
     if isinstance(value, (str, bytes, bool, int)):
         raise ValueError("cannot encode objects that are not 2-tuples")
 
-    return OrderedDict(value)
-
-
-def to_key_val_list(value):
-    """Take an object and test to see if it can be represented as a
-    dictionary. If it can be, return a list of tuples, e.g.,
-
-    ::
-
-        >>> to_key_val_list([('key', 'val')])
-        [('key', 'val')]
-        >>> to_key_val_list({'key': 'val'})
-        [('key', 'val')]
-        >>> to_key_val_list('string')
-        Traceback (most recent call last):
-        ...
-        ValueError: cannot encode objects that are not 2-tuples
-
-    :rtype: list
-    """
-    if value is None:
-        return None
-
-    if isinstance(value, (str, bytes, bool, int)):
-        raise ValueError("cannot encode objects that are not 2-tuples")
-
-    if isinstance(value, Mapping):
-        value = value.items()
-
-    return list(value)
+    if to_dict:
+        # Behaves like from_key_val_list
+        return OrderedDict(value)
+    else:
+        # Behaves like to_key_val_list
+        if isinstance(value, Mapping):
+            value = value.items()
+        return list(value)
 
 
 # From mitsuhiko/werkzeug (used with permission).

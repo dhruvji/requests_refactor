@@ -28,6 +28,7 @@ from requests.utils import (
     is_ipv4_address,
     is_valid_cidr,
     iter_slices,
+    key_val_convert,
     parse_dict_header,
     parse_header_links,
     prepend_scheme_if_needed,
@@ -36,7 +37,6 @@ from requests.utils import (
     set_environ,
     should_bypass_proxies,
     super_len,
-    to_key_val_list,
     to_native_string,
     unquote_header_value,
     unquote_unreserved,
@@ -163,11 +163,11 @@ class TestToKeyValList:
         ),
     )
     def test_valid(self, value, expected):
-        assert to_key_val_list(value) == expected
+        assert key_val_convert(value, to_dict=False) == expected
 
     def test_invalid(self):
         with pytest.raises(ValueError):
-            to_key_val_list("string")
+            key_val_convert("string", to_dict=False)
 
 
 class TestUnquoteHeaderValue:
