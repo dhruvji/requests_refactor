@@ -11,7 +11,6 @@ import time
 from collections import OrderedDict
 from datetime import timedelta
 
-from ._internal_utils import to_native_string
 from .adapters import HTTPAdapter
 from .auth import _basic_auth_str
 from .compat import Mapping, cookielib, urljoin, urlparse
@@ -49,6 +48,7 @@ from .utils import (  # noqa: F401
     rewind_body,
     should_bypass_proxies,
     to_key_val_list,
+    to_native_string,
 )
 
 # Preferred clock, based on which one is more accurate on a given system.

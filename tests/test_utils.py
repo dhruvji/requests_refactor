@@ -10,7 +10,6 @@ from unittest import mock
 import pytest
 
 from requests import compat
-from requests._internal_utils import unicode_is_ascii
 from requests.cookies import RequestsCookieJar
 from requests.structures import CaseInsensitiveDict
 from requests.utils import (
@@ -38,6 +37,7 @@ from requests.utils import (
     super_len,
     to_key_val_list,
     to_native_string,
+    unicode_is_ascii,
     unquote_header_value,
     unquote_unreserved,
     urldefragauth,

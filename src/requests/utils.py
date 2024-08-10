@@ -24,16 +24,10 @@ from urllib3.util import make_headers, parse_url
 from . import certs
 from .__version__ import __version__
 
-# to_native_string is unused here, but imported here for backwards compatibility
-from ._internal_utils import (  # noqa: F401
-    _HEADER_VALIDATORS_BYTE,
-    _HEADER_VALIDATORS_STR,
-    HEADER_VALIDATORS,
-    to_native_string,
-)
 from .compat import (
     Mapping,
     basestring,
+    builtin_str,
     bytes,
     getproxies,
     getproxies_environment,
@@ -69,6 +63,18 @@ DEFAULT_PORTS = {"http": 80, "https": 443}
 DEFAULT_ACCEPT_ENCODING = ", ".join(
     re.split(r",\s*", make_headers(accept_encoding=True)["accept-encoding"])
 )
+
+_VALID_HEADER_NAME_RE_BYTE = re.compile(rb"^[^:\s][^:\r\n]*$")
+_VALID_HEADER_NAME_RE_STR = re.compile(r"^[^:\s][^:\r\n]*$")
+_VALID_HEADER_VALUE_RE_BYTE = re.compile(rb"^\S[^\r\n]*$|^$")
+_VALID_HEADER_VALUE_RE_STR = re.compile(r"^\S[^\r\n]*$|^$")
+
+_HEADER_VALIDATORS_STR = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+_HEADER_VALIDATORS_BYTE = (_VALID_HEADER_NAME_RE_BYTE, _VALID_HEADER_VALUE_RE_BYTE)
+HEADER_VALIDATORS = {
+    bytes: _HEADER_VALIDATORS_BYTE,
+    str: _HEADER_VALIDATORS_STR,
+}
 
 
 if sys.platform == "win32":
@@ -202,6 +208,35 @@ def super_len(o):
         total_length = 0
 
     return max(0, total_length - current_position)
+
+
+
+def to_native_string(string, encoding="ascii"):
+    """Given a string object, regardless of type, returns a representation of
+    that string in the native string type, encoding and decoding where
+    necessary. This assumes ASCII unless told otherwise.
+    """
+    if isinstance(string, builtin_str):
+        out = string
+    else:
+        out = string.decode(encoding)
+
+    return out
+
+
+def unicode_is_ascii(u_string):
+    """Determine if unicode string only contains ASCII characters.
+
+    :param str u_string: unicode string to check. Must be unicode
+        and not Python 2 `str`.
+    :rtype: bool
+    """
+    assert isinstance(u_string, str)
+    try:
+        u_string.encode("ascii")
+        return True
+    except UnicodeEncodeError:
+        return False
 
 
 def get_netrc_auth(url, raise_errors=False):

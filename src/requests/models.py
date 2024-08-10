@@ -24,7 +24,6 @@ from urllib3.fields import RequestField
 from urllib3.filepost import encode_multipart_formdata
 from urllib3.util import parse_url
 
-from ._internal_utils import to_native_string, unicode_is_ascii
 from .auth import HTTPBasicAuth
 from .compat import (
     Callable,
@@ -64,6 +63,8 @@ from .utils import (
     stream_decode_response_unicode,
     super_len,
     to_key_val_list,
+    to_native_string, 
+    unicode_is_ascii,
 )
 
 #: The set of HTTP status codes that indicate an automatically
