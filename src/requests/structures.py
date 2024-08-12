@@ -80,7 +80,7 @@ class CaseInsensitiveDict(MutableMapping):
         return str(dict(self.items()))
 
 
-class LookupDict(dict):
+class DictLookup(dict):
     """Dictionary lookup object."""
 
     def __init__(self, name=None):

@@ -1,6 +1,6 @@
 import pytest
 
-from requests.structures import CaseInsensitiveDict, LookupDict
+from requests.structures import CaseInsensitiveDict, DictLookup
 
 
 class TestCaseInsensitiveDict:
@@ -55,7 +55,7 @@ class TestLookupDict:
     @pytest.fixture(autouse=True)
     def setup(self):
         """LookupDict instance with "bad_gateway" attribute."""
-        self.lookup_dict = LookupDict("test")
+        self.lookup_dict = DictLookup("test")
         self.lookup_dict.bad_gateway = 502
 
     def test_repr(self):
